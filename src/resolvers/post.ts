@@ -1,6 +1,6 @@
 import { Post } from "../entities/Post";
 import { MyContext } from "../types";
-import { Resolver, Query, Ctx, Arg, Int, Mutation } from "type-graphql";
+import { Resolver, Query, Ctx, Arg, Mutation } from "type-graphql";
 
 @Resolver()
 export class PostResolver {
@@ -10,10 +10,7 @@ export class PostResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  post(
-    @Arg("id", () => Int) id: number,
-    @Ctx() { em }: MyContext
-  ): Promise<Post | null> {
+  post(@Arg("id") id: number, @Ctx() { em }: MyContext): Promise<Post | null> {
     return em.findOne(Post, { id });
   }
 
@@ -49,7 +46,7 @@ export class PostResolver {
     @Arg("id") id: number,
     @Ctx() { em }: MyContext
   ): Promise<boolean> {
-      await em.nativeDelete(Post, { id });
-      return true
-    }
+    await em.nativeDelete(Post, { id });
+    return true;
+  }
 }
