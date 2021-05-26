@@ -10,9 +10,12 @@ import {
   Query,
 } from "type-graphql";
 import argon2 from "argon2";
-import { cookieName } from "../constants";
+import { cookieName, FORGET_PASSWORD_PREFIX } from "../constants";
 import { UsernamePasswordInput } from "./UsernamePasswordInput";
 import { validateRegister } from "../utils/validateRegister";
+import { sendEmail } from "../utils/sendEmail";
+import { v4 } from "uuid";
+import { createFieldError } from "../utils/createFieldError";
 
 @ObjectType()
 class FieldError {
@@ -34,9 +37,56 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string,
+    @Ctx() { em, redis, req }: MyContext
+  ): Promise<UserResponse> {
+    if (newPassword.length <= 5) {
+      return createFieldError(
+        "newPassword",
+        "Password length must be greater than 5"
+      );
+    }
+    const userId = await redis.get(`${FORGET_PASSWORD_PREFIX}${token}`);
+    if (!userId) return createFieldError("token", "The token has expired");
+    const user = await em.findOne(User, { id: parseInt(userId) });
+
+    if (!user) {
+      return createFieldError("token", "User not found");
+    }
+
+    user.password = await argon2.hash(newPassword);
+    await em.persistAndFlush(user);
+
+    req.session!.userId = user.id;
+
+    redis.del(`${FORGET_PASSWORD_PREFIX}${token}`);
+
+    return { user };
+  }
   @Mutation(() => Boolean)
-  async forgotPassword(@Arg("email") email: string, @Ctx() { em }: MyContext) {
-    const user = await em.findOne(User, { username: email });
+  async forgotPassword(
+    @Arg("email") email: string,
+    @Ctx() { em, redis }: MyContext
+  ) {
+    const user = await em.findOne(User, { email: email });
+    if (!user) return false;
+    console.log("hi");
+    const token = v4();
+    await redis.set(
+      `${FORGET_PASSWORD_PREFIX}${token}`,
+      user.id,
+      "ex",
+      1000 * 60 * 60 * 1 // 1 day
+    );
+    sendEmail(
+      user.email,
+      `<a href="http://localhost:3000/change-password/${token}">Reset password</a>`
+    );
+
+    return true;
   }
 
   @Mutation(() => UserResponse)

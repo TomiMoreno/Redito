@@ -17,7 +17,6 @@ export const NavBar: React.FC<NavBarProps> = () => {
       <>
         <NextLink href="/login">
           <Link color="white" mr={4}>
-            {" "}
             Login
           </Link>
         </NextLink>

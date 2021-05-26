@@ -23,8 +23,7 @@ export async function sendEmail(to: string, html: string) {
     from: '"Fred Foo 👻" <foo@example.com>', // sender address
     to: to, // list of receivers
     subject: "Change password", // Subject line
-    text: html, // plain text body
-    html: "<b>Hello world?</b>", // html body
+    html, // html body
   });
 
   console.log("Message sent: %s", info.messageId);
