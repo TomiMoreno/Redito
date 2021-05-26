@@ -18,7 +18,7 @@ export const Login = () => {
         Login
       </Text>
       <Formik
-        initialValues={{ username: "", password: "" }}
+        initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await login(values);
           if (response.data?.login.errors) {
@@ -32,9 +32,9 @@ export const Login = () => {
         {({ isSubmitting }) => (
           <Form>
             <InputField
-              name="username"
-              placeholder="Username"
-              label="Username"
+              name="usernameOrEmail"
+              placeholder="Username or email"
+              label="Username or email"
             />
             <Box mt={4}>
               <InputField
