@@ -11,13 +11,16 @@ import { useChangePasswordMutation } from "../../generated/graphql";
 import { createUrqlClient } from "../../utils/createUrqlClient";
 import toErrorMap from "../../utils/toErrorMap";
 import NextLink from "next/link";
+import { DarkModeSwitch } from "../../components/DarkModeSwitch";
 
-const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
+const ChangePassword: NextPage<{ token: string }> = ({}) => {
   const [, changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
   const router = useRouter();
+  const { token } = router.query;
   return (
     <FormWrapper>
+      <DarkModeSwitch isFixed />
       <Text fontSize="50px" textAlign="center">
         Change password
       </Text>
@@ -26,7 +29,7 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
         initialValues={{ newPassword: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await changePassword({
-            token,
+            token: typeof token === "string" ? token : "",
             newPassword: values.newPassword,
           });
           console.log(response);
@@ -78,12 +81,6 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
       )}
     </FormWrapper>
   );
-};
-
-ChangePassword.getInitialProps = ({ query }) => {
-  return {
-    token: query.token as string,
-  };
 };
 
 export default withUrqlClient(createUrqlClient)(

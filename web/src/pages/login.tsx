@@ -4,6 +4,7 @@ import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
+import { DarkModeSwitch } from "../components/DarkModeSwitch";
 import { InputField } from "../components/InputField";
 import { FormWrapper } from "../components/Wrapper";
 import { useLoginMutation } from "../generated/graphql";
@@ -15,6 +16,7 @@ export const Login = () => {
   const router = useRouter();
   return (
     <FormWrapper>
+      <DarkModeSwitch isFixed />
       <Box>
         <Heading fontSize="50px" textAlign="center">
           Login
@@ -28,7 +30,11 @@ export const Login = () => {
             const errors = toErrorMap(response.data.login.errors);
             setErrors(errors);
           } else if (response.data?.login.user) {
-            router.push("/");
+            if (typeof router.query.next === "string") {
+              router.push(router.query.next);
+            } else {
+              router.push("/");
+            }
           }
         }}
       >

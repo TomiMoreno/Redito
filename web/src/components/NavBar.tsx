@@ -1,8 +1,9 @@
-import { Box, Link, Flex, Button } from "@chakra-ui/react";
+import { Button, Flex, Link, Text, useColorModeValue } from "@chakra-ui/react";
 import NextLink from "next/link";
 import React from "react";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
+import { DarkModeSwitch } from "./DarkModeSwitch";
 
 interface NavBarProps {}
 export const NavBar: React.FC<NavBarProps> = () => {
@@ -16,21 +17,19 @@ export const NavBar: React.FC<NavBarProps> = () => {
     body = (
       <>
         <NextLink href="/login">
-          <Link color="white" mr={4}>
-            Login
-          </Link>
+          <Link mr={4}>Login</Link>
         </NextLink>
         <NextLink href="/register">
-          <Link color="white">Register</Link>
+          <Link mr={4}>Register</Link>
         </NextLink>
       </>
     );
   } else {
     body = (
       <>
-        <Box>{data?.me?.username}</Box>
+        <Text>{data?.me?.username}</Text>
         <Button
-          ml={5}
+          mx={5}
           onClick={() => {
             logout();
           }}
@@ -43,15 +42,27 @@ export const NavBar: React.FC<NavBarProps> = () => {
   }
   return (
     <Flex
-      bg="purple.500"
       alignItems="center"
-      justifyContent="flex-end"
+      justifyContent="space-between"
       flexDirection="row"
       p={4}
       w="full"
       position="sticky"
+      borderBottom={1}
+      borderStyle={"solid"}
+      borderColor={useColorModeValue("gray.200", "gray.900")}
+      mb={4}
     >
-      {body}
+      <Text
+        fontFamily={"heading"}
+        color={useColorModeValue("gray.800", "white")}
+      >
+        Redito
+      </Text>
+      <Flex align="center" justify="center">
+        {body}
+        <DarkModeSwitch />
+      </Flex>
     </Flex>
   );
 };

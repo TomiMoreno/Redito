@@ -8,6 +8,7 @@ import toErrorMap from "../utils/toErrorMap";
 import { useRouter } from "next/router";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
+import { DarkModeSwitch } from "../components/DarkModeSwitch";
 
 interface registerProps {}
 
@@ -16,6 +17,7 @@ export const Register: React.FC<registerProps> = () => {
   const router = useRouter();
   return (
     <FormWrapper>
+      <DarkModeSwitch isFixed />
       <Text fontSize="50px" textAlign="center">
         Register
       </Text>
