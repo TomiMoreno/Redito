@@ -43,11 +43,13 @@ export const NavBar: React.FC<NavBarProps> = () => {
   }
   return (
     <Flex
-      bg="purple"
+      bg="purple.500"
       alignItems="center"
       justifyContent="flex-end"
       flexDirection="row"
       p={4}
+      w="full"
+      position="sticky"
     >
       {body}
     </Flex>

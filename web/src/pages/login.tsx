@@ -1,23 +1,25 @@
-import React from "react";
-import { Box, Button, Text, Link, Flex } from "@chakra-ui/react";
-import { Formik, Form } from "formik";
-import { Wrapper } from "../components/Wrapper";
-import { InputField } from "../components/InputField";
-import { useLoginMutation } from "../generated/graphql";
-import toErrorMap from "../utils/toErrorMap";
-import { useRouter } from "next/router";
+import { Box, Button, Flex, Heading, Link } from "@chakra-ui/react";
+import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClient";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
+import { InputField } from "../components/InputField";
+import { FormWrapper } from "../components/Wrapper";
+import { useLoginMutation } from "../generated/graphql";
+import { createUrqlClient } from "../utils/createUrqlClient";
+import toErrorMap from "../utils/toErrorMap";
 
 export const Login = () => {
   const [{}, login] = useLoginMutation();
   const router = useRouter();
   return (
-    <Wrapper variant="small">
-      <Text fontSize="50px" textAlign="center">
-        Login
-      </Text>
+    <FormWrapper>
+      <Box>
+        <Heading fontSize="50px" textAlign="center">
+          Login
+        </Heading>
+      </Box>
       <Formik
         initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
@@ -60,7 +62,7 @@ export const Login = () => {
           </Form>
         )}
       </Formik>
-    </Wrapper>
+    </FormWrapper>
   );
 };
 export default withUrqlClient(createUrqlClient)(Login);

@@ -17,7 +17,7 @@ class PostInput {
   @Field()
   title: string;
   @Field()
-  text: string;
+  body: string;
 }
 
 @Resolver()

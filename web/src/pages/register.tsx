@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button, Text } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
-import { Wrapper } from "../components/Wrapper";
+import { FormWrapper } from "../components/Wrapper";
 import { InputField } from "../components/InputField";
 import { useRegisterMutation } from "../generated/graphql";
 import toErrorMap from "../utils/toErrorMap";
@@ -15,7 +15,7 @@ export const Register: React.FC<registerProps> = () => {
   const [{}, register] = useRegisterMutation();
   const router = useRouter();
   return (
-    <Wrapper variant="small">
+    <FormWrapper>
       <Text fontSize="50px" textAlign="center">
         Register
       </Text>
@@ -66,7 +66,7 @@ export const Register: React.FC<registerProps> = () => {
           </Form>
         )}
       </Formik>
-    </Wrapper>
+    </FormWrapper>
   );
 };
 export default withUrqlClient(createUrqlClient)(Register);

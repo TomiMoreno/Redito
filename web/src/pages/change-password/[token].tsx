@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import React, { FunctionComponent, PropsWithChildren } from "react";
 import { useState } from "react";
 import { InputField } from "../../components/InputField";
-import { Wrapper } from "../../components/Wrapper";
+import { FormWrapper } from "../../components/Wrapper";
 import { useChangePasswordMutation } from "../../generated/graphql";
 import { createUrqlClient } from "../../utils/createUrqlClient";
 import toErrorMap from "../../utils/toErrorMap";
@@ -17,7 +17,7 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
   const [tokenError, setTokenError] = useState("");
   const router = useRouter();
   return (
-    <Wrapper variant="small">
+    <FormWrapper>
       <Text fontSize="50px" textAlign="center">
         Change password
       </Text>
@@ -76,7 +76,7 @@ const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
           </Text>
         </Flex>
       )}
-    </Wrapper>
+    </FormWrapper>
   );
 };
 
