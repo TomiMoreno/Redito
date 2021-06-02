@@ -1,5 +1,10 @@
-import { fetchExchange, dedupExchange, Exchange } from "urql";
-import { cacheExchange } from "@urql/exchange-graphcache";
+import {
+  fetchExchange,
+  dedupExchange,
+  Exchange,
+  stringifyVariables,
+} from "urql";
+import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import {
   LoginMutation,
   LogoutMutation,
@@ -26,6 +31,45 @@ export const errorExchange: Exchange =
     );
   };
 
+export const cursorPagination = (): Resolver => {
+  return (_parent, fieldArgs, cache, info) => {
+    const { parentKey: entityKey, fieldName } = info;
+
+    const allFields = cache.inspectFields(entityKey);
+    const fieldInfos = allFields.filter((info) => info.fieldName === fieldName);
+    const size = fieldInfos.length;
+    if (size === 0) {
+      return undefined;
+    }
+    const results: string[] = [];
+    const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
+    const isItInCache = cache.resolve(
+      cache.resolve(entityKey, fieldKey) as string,
+      "posts"
+    ) as string[];
+    info.partial = !isItInCache;
+    let hasMore = true;
+    fieldInfos.forEach((field) => {
+      const data = cache.resolve(entityKey, field.fieldKey) as string;
+      console.log("data", data);
+      const key = cache.resolve(data, "posts") as string[];
+      console.log("key: ", key);
+      const _hasMore = cache.resolve(data, "hasMore");
+      console.log("hasMore: ", _hasMore);
+      if (!_hasMore) {
+        hasMore = _hasMore as boolean;
+      }
+      results.push(...key);
+    });
+    const a = {
+      __typename: "PaginatedPosts",
+      hasMore,
+      posts: results,
+    };
+    console.log(a);
+    return a;
+  };
+};
 export const createUrqlClient = (ssrExchange: any) => ({
   url: "http://localhost:4000/graphql",
   fetchOptions: {
@@ -34,6 +78,14 @@ export const createUrqlClient = (ssrExchange: any) => ({
   exchanges: [
     dedupExchange,
     cacheExchange({
+      resolvers: {
+        keys: {
+          PaginatedPosts: () => null,
+        },
+        Query: {
+          posts: cursorPagination(),
+        },
+      },
       updates: {
         Mutation: {
           login: (_result, _args, cache, _info) => {

@@ -13,16 +13,17 @@ import {
   Flex,
   Spinner,
 } from "@chakra-ui/react";
+import { useState } from "react";
 
 const Index = () => {
-  const [{ data, fetching }] = usePostsQuery({
-    variables: {
-      limit: 3,
-    },
+  const [variables, setVariables] = useState({
+    limit: 10,
+    cursor: null as string | null,
   });
-  const paginate = () => {
-    data;
-  };
+  const [{ data, fetching, stale }] = usePostsQuery({
+    variables,
+  });
+  console.log(data);
   return (
     <Layout>
       <Center p={8}>
@@ -37,7 +38,7 @@ const Index = () => {
           ) : (
             <Stack my={4} spacing={8}>
               {data &&
-                data.posts.map((p) => (
+                data.posts.posts.map((p) => (
                   <Box key={p.id} p={5} shadow="md" borderWidth="1px">
                     <Heading fontSize="xl">{p.title}</Heading>
                     <Text mt={4}>{p.reducedBody}</Text>
@@ -45,12 +46,19 @@ const Index = () => {
                 ))}
             </Stack>
           )}
-          {data && (
+          {data && data?.posts.hasMore && (
             <Button
               my={4}
               colorScheme="purple"
               w="min-content"
-              onClick={paginate}
+              isLoading={stale}
+              onClick={() =>
+                setVariables({
+                  limit: variables.limit,
+                  cursor:
+                    data.posts.posts[data.posts.posts.length - 1]?.createdAt,
+                })
+              }
             >
               Load more
             </Button>
