@@ -75,5 +75,3 @@ const main = async () => {
   });
 };
 main().catch((e) => console.log(e));
-
-console.log("Hello world");

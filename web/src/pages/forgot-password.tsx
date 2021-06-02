@@ -21,7 +21,6 @@ export const ForgotPassword = () => {
         initialValues={{ email: "" }}
         onSubmit={async (values) => {
           const response = await forgotPassword(values);
-          console.log(response);
           if (response.data?.forgotPassword) {
             setEmailExists("An email has been sent");
           } else {

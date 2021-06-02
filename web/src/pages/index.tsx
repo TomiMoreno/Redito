@@ -23,7 +23,6 @@ const Index = () => {
   const [{ data, fetching, stale }] = usePostsQuery({
     variables,
   });
-  console.log(data);
   return (
     <Layout>
       <Center p={8}>

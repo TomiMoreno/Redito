@@ -32,7 +32,6 @@ const ChangePassword: NextPage<{ token: string }> = ({}) => {
             token: typeof token === "string" ? token : "",
             newPassword: values.newPassword,
           });
-          console.log(response);
           if (response.data?.changePassword.errors) {
             const errors = toErrorMap(response.data.changePassword.errors);
             if (errors) {
@@ -42,7 +41,6 @@ const ChangePassword: NextPage<{ token: string }> = ({}) => {
               setErrors(errors);
             }
           } else if (response.data?.changePassword.user) {
-            console.log(response);
             router.push("/");
           }
         }}

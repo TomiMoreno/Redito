@@ -51,23 +51,18 @@ export const cursorPagination = (): Resolver => {
     let hasMore = true;
     fieldInfos.forEach((field) => {
       const data = cache.resolve(entityKey, field.fieldKey) as string;
-      console.log("data", data);
       const key = cache.resolve(data, "posts") as string[];
-      console.log("key: ", key);
       const _hasMore = cache.resolve(data, "hasMore");
-      console.log("hasMore: ", _hasMore);
       if (!_hasMore) {
         hasMore = _hasMore as boolean;
       }
       results.push(...key);
     });
-    const a = {
+    return {
       __typename: "PaginatedPosts",
       hasMore,
       posts: results,
     };
-    console.log(a);
-    return a;
   };
 };
 export const createUrqlClient = (ssrExchange: any) => ({

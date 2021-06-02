@@ -76,7 +76,6 @@ export class UserResolver {
   ) {
     const user = await User.findOne({ where: { email: email } });
     if (!user) return false;
-    console.log("hi");
     const token = v4();
     await redis.set(
       `${FORGET_PASSWORD_PREFIX}${token}`,

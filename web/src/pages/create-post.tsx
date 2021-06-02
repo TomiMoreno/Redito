@@ -26,7 +26,6 @@ export const CreatePost: React.FC = () => {
             if (!response.error) {
               router.push("/");
             }
-            console.log(response.error);
           }}
         >
           {({ isSubmitting }) => (
