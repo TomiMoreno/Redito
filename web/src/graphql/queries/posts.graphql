@@ -5,7 +5,12 @@ query Posts($limit: Int!, $cursor: String) {
       createdAt
       updatedAt
       title
-      reducedBody
+      body
+      creator {
+        id
+        username
+        email
+      }
     }
     hasMore
   }

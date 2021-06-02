@@ -15,7 +15,7 @@ import {
 } from "type-graphql";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
-import { getConnection } from "typeorm";
+import { LessThan } from "typeorm";
 
 @InputType()
 class PostInput {
@@ -49,19 +49,16 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit) + 1;
     const realLimitPlusOne = realLimit + 1;
-    const query = getConnection()
-      .getRepository(Post)
-      .createQueryBuilder("p")
-      .orderBy('"createdAt"', "DESC")
-      .take(realLimitPlusOne);
+    const cursorWhere = cursor
+      ? { createdAt: LessThan(new Date(parseInt(cursor))) }
+      : {};
 
-    if (cursor) {
-      query.where('"createdAt" < :cursor', {
-        cursor: new Date(parseInt(cursor)),
-      });
-    }
-
-    const posts = await query.getMany();
+    const posts = await Post.find({
+      take: realLimitPlusOne,
+      order: { createdAt: "DESC" },
+      where: cursorWhere,
+      relations: ["creator"],
+    });
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,
