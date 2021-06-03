@@ -15,7 +15,7 @@ import {
 } from "type-graphql";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
-import { LessThan } from "typeorm";
+import { getConnection, LessThan } from "typeorm";
 
 @InputType()
 class PostInput {
@@ -42,6 +42,7 @@ export class PostResolver {
     }
     return root.body;
   }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
@@ -101,6 +102,34 @@ export class PostResolver {
   @Mutation(() => Boolean)
   async deletePost(@Arg("id") id: number): Promise<boolean> {
     Post.delete(id);
+    return true;
+  }
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("value", () => Boolean) value: boolean,
+    @Arg("postId", () => Int) postId: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const { userId } = req.session;
+    try {
+      const numericValue = +value || -1;
+      await getConnection().query(`
+        START TRANSACTION;
+
+        insert into vote ("userId", "postId", value)
+        values (${userId}, ${postId}, ${value});
+
+        update post
+        set points = points + ${numericValue}
+        where id = ${postId};
+
+        COMMIT;
+      `);
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
     return true;
   }
 }

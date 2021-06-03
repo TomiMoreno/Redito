@@ -3,7 +3,6 @@ import { cookieName, __prod__ } from "./constants";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
-import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from "./resolvers/user";
 import Redis from "ioredis";
@@ -15,6 +14,7 @@ import { createConnection } from "typeorm";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 import path from "path";
+import { Vote } from "./entities/Vote";
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
@@ -23,7 +23,7 @@ const main = async () => {
     password: "admin",
     logging: true,
     synchronize: true,
-    entities: [Post, User],
+    entities: [Post, User, Vote],
     migrations: [path.join(__dirname, "./migrations/*")],
   });
   conn.runMigrations();
@@ -59,7 +59,7 @@ const main = async () => {
   );
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver, PostResolver, UserResolver],
+      resolvers: [PostResolver, UserResolver],
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({ req, res, redis }),
