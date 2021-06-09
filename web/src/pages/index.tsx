@@ -14,6 +14,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { Vote } from "../components/Vote";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -38,9 +39,22 @@ const Index = () => {
             <Stack my={4} spacing={8}>
               {data &&
                 data.posts.posts.map((p) => (
-                  <Box key={p.id} p={5} shadow="md" borderWidth="1px">
-                    <Heading fontSize="xl">{p.title}</Heading>
-                    <Text mt={4}>{p.reducedBody}</Text>
+                  <Box key={p.id} p={5} pl={0} shadow="md" borderWidth="1px">
+                    <Flex>
+                      <Vote post={p} />
+                      <Box flexGrow={1}>
+                        <Flex align="center" justify="space-between">
+                          <Heading fontSize="xl">{p.title}</Heading>
+                          <Text>
+                            {new Date(
+                              parseInt(p.createdAt)
+                            ).toLocaleTimeString()}
+                          </Text>
+                        </Flex>
+                        <Text>Posted by {p?.creator.username}</Text>
+                        <Text mt={4}>{p.reducedBody}</Text>
+                      </Box>
+                    </Flex>
                   </Box>
                 ))}
             </Stack>

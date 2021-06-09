@@ -40,6 +40,9 @@ export class Post extends BaseEntity {
   creator: User;
   @OneToMany(() => Vote, (vote) => vote.post)
   votes: Vote[];
+
+  @Field()
+  voteStatus: number;
   @Field(() => String)
   @CreateDateColumn()
   createdAt: Date;

@@ -16,6 +16,7 @@ import {
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { getConnection, LessThan } from "typeorm";
+import { Vote } from "../entities/Vote";
 
 @InputType()
 class PostInput {
@@ -107,25 +108,56 @@ export class PostResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async vote(
-    @Arg("value", () => Boolean) value: boolean,
+    @Arg("value", () => Int) value: number,
     @Arg("postId", () => Int) postId: number,
     @Ctx() { req }: MyContext
   ) {
     const { userId } = req.session;
     try {
-      const numericValue = +value || -1;
-      await getConnection().query(`
-        START TRANSACTION;
+      let updateValue = 0;
+      if (value > 0) {
+        updateValue = 1;
+        value = 1;
+      }
+      if (value < 0) {
+        updateValue = -1;
+        value = -1;
+      }
 
-        insert into vote ("userId", "postId", value)
-        values (${userId}, ${postId}, ${value});
-
-        update post
-        set points = points + ${numericValue}
-        where id = ${postId};
-
-        COMMIT;
-      `);
+      const previousVote = await Vote.findOne({ where: { postId, userId } });
+      if (previousVote) {
+        console.log("previousVote", previousVote.value);
+        console.log("value", value);
+        updateValue = -previousVote.value + value;
+        console.log(updateValue);
+        await getConnection().transaction(async (tm) => {
+          await tm.query(
+            `
+          update vote
+          set value = $1
+          where "postId" = $2 and "userId" = $3
+              `,
+            [value, postId, userId]
+          );
+          await tm.query(
+            `
+          update post
+          set points = points + $1
+          where id = $2
+        `,
+            [updateValue, postId]
+          );
+        });
+      } else {
+        await getConnection().transaction(async (tm) => {
+          await tm.insert(Vote, { userId, postId, value });
+          await tm.update(
+            Post,
+            { id: postId },
+            { points: () => `points + ${updateValue}` }
+          );
+        });
+      }
     } catch (e) {
       console.error(e);
       return false;

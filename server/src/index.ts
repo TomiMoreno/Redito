@@ -18,9 +18,9 @@ import { Vote } from "./entities/Vote";
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
-    database: "redito2",
-    username: "admin",
-    password: "admin",
+    database: "redito",
+    username: "redito",
+    password: "redito",
     logging: true,
     synchronize: true,
     entities: [Post, User, Vote],
@@ -29,7 +29,6 @@ const main = async () => {
   conn.runMigrations();
   const app = express();
 
-  //await Post.delete({});
   const redisStore = connectRedis(session);
   const redis = new Redis();
   app.use(

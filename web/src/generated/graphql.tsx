@@ -25,6 +25,7 @@ export type Mutation = {
   createPost: Post;
   updatePost?: Maybe<Post>;
   deletePost: Scalars['Boolean'];
+  vote: Scalars['Boolean'];
   changePassword: UserResponse;
   forgotPassword: Scalars['Boolean'];
   register: UserResponse;
@@ -49,6 +50,12 @@ export type MutationDeletePostArgs = {
 };
 
 
+export type MutationVoteArgs = {
+  postId: Scalars['Int'];
+  value: Scalars['Int'];
+};
+
+
 export type MutationChangePasswordArgs = {
   newPassword: Scalars['String'];
   token: Scalars['String'];
@@ -70,8 +77,8 @@ export type MutationLoginArgs = {
   usernameOrEmail: Scalars['String'];
 };
 
-export type PaginatedPost = {
-  __typename?: 'PaginatedPost';
+export type PaginatedPosts = {
+  __typename?: 'PaginatedPosts';
   posts: Array<Post>;
   hasMore: Scalars['Boolean'];
 };
@@ -83,6 +90,7 @@ export type Post = {
   creatorId: Scalars['Float'];
   body: Scalars['String'];
   points: Scalars['Float'];
+  creator: User;
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
   reducedBody: Scalars['String'];
@@ -95,8 +103,7 @@ export type PostInput = {
 
 export type Query = {
   __typename?: 'Query';
-  hello: Scalars['String'];
-  posts: PaginatedPost;
+  posts: PaginatedPosts;
   post?: Maybe<Post>;
   me?: Maybe<User>;
 };
@@ -133,6 +140,15 @@ export type UsernamePasswordInput = {
   password: Scalars['String'];
   email: Scalars['String'];
 };
+
+export type PostSnippetFragment = (
+  { __typename?: 'Post' }
+  & Pick<Post, 'id' | 'createdAt' | 'updatedAt' | 'title' | 'reducedBody' | 'points'>
+  & { creator: (
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'username'>
+  ) }
+);
 
 export type RegularErrorFragment = (
   { __typename?: 'FieldError' }
@@ -227,6 +243,17 @@ export type RegisterMutation = (
   ) }
 );
 
+export type VoteMutationVariables = Exact<{
+  value: Scalars['Int'];
+  postId: Scalars['Int'];
+}>;
+
+
+export type VoteMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'vote'>
+);
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -247,15 +274,29 @@ export type PostsQueryVariables = Exact<{
 export type PostsQuery = (
   { __typename?: 'Query' }
   & { posts: (
-    { __typename?: 'PaginatedPost' }
-    & Pick<PaginatedPost, 'hasMore'>
+    { __typename?: 'PaginatedPosts' }
+    & Pick<PaginatedPosts, 'hasMore'>
     & { posts: Array<(
       { __typename?: 'Post' }
-      & Pick<Post, 'id' | 'createdAt' | 'updatedAt' | 'title' | 'reducedBody'>
+      & PostSnippetFragment
     )> }
   ) }
 );
 
+export const PostSnippetFragmentDoc = gql`
+    fragment PostSnippet on Post {
+  id
+  createdAt
+  updatedAt
+  title
+  reducedBody
+  points
+  creator {
+    id
+    username
+  }
+}
+    `;
 export const RegularErrorFragmentDoc = gql`
     fragment regularError on FieldError {
   field
@@ -348,6 +389,15 @@ export const RegisterDocument = gql`
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
 };
+export const VoteDocument = gql`
+    mutation Vote($value: Int!, $postId: Int!) {
+  vote(value: $value, postId: $postId)
+}
+    `;
+
+export function useVoteMutation() {
+  return Urql.useMutation<VoteMutation, VoteMutationVariables>(VoteDocument);
+};
 export const MeDocument = gql`
     query Me {
   me {
@@ -363,16 +413,12 @@ export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: String) {
   posts(limit: $limit, cursor: $cursor) {
     posts {
-      id
-      createdAt
-      updatedAt
-      title
-      reducedBody
+      ...PostSnippet
     }
     hasMore
   }
 }
-    `;
+    ${PostSnippetFragmentDoc}`;
 
 export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });
