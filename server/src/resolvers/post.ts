@@ -15,7 +15,7 @@ import {
 } from "type-graphql";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
-import { getConnection, LessThan } from "typeorm";
+import { getConnection } from "typeorm";
 import { Vote } from "../entities/Vote";
 
 @InputType()
@@ -47,20 +47,41 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
+    @Ctx() { req }: MyContext
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit) + 1;
     const realLimitPlusOne = realLimit + 1;
-    const cursorWhere = cursor
-      ? { createdAt: LessThan(new Date(parseInt(cursor))) }
-      : {};
+    const replacements: any[] = [realLimitPlusOne, req.session.userId];
+    console.log("user", req.session);
+    if (cursor) {
+      replacements.push(new Date(parseInt(cursor)));
+    }
 
-    const posts = await Post.find({
-      take: realLimitPlusOne,
-      order: { createdAt: "DESC" },
-      where: cursorWhere,
-      relations: ["creator"],
-    });
+    const posts = await getConnection().query(
+      `
+    select p.*,
+    json_build_object(
+      'id', u.id,
+      'username', u.username,
+      'email', u.email,
+      'createdAt', u."createdAt",
+      'updatedAt', u."updatedAt"
+      ) creator,
+      ${
+        req.session.userId
+          ? '(select value from vote where "userId" = $2 and "postId" = p.id) as "voteStatus"'
+          : '0 as "voteStatus", $2'
+      }
+    from post p
+    inner join public.user u on u.id = p."creatorId"
+    ${cursor ? `where p."createdAt" < $3` : ""}
+    order by p."createdAt" DESC
+    limit $1;
+    `,
+      replacements
+    );
+
     return {
       posts: posts.slice(0, realLimit),
       hasMore: posts.length === realLimitPlusOne,
@@ -126,10 +147,7 @@ export class PostResolver {
 
       const previousVote = await Vote.findOne({ where: { postId, userId } });
       if (previousVote) {
-        console.log("previousVote", previousVote.value);
-        console.log("value", value);
         updateValue = -previousVote.value + value;
-        console.log(updateValue);
         await getConnection().transaction(async (tm) => {
           await tm.query(
             `

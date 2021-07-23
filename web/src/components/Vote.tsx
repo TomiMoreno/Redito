@@ -7,7 +7,7 @@ interface VoteProps {
   post: PostSnippetFragment;
 }
 export const Vote: React.FC<VoteProps> = ({ post }) => {
-  const [{}, vote] = useVoteMutation();
+  const [, vote] = useVoteMutation();
   const [loading, setLoading] =
     useState<"none" | "upvote" | "downvote">("none");
   return (
@@ -16,11 +16,13 @@ export const Vote: React.FC<VoteProps> = ({ post }) => {
         isLoading={loading === "upvote"}
         onClick={async () => {
           setLoading("upvote");
-          await vote({ postId: post.id, value: 1 });
+          const voteValue = post.voteStatus !== 1 ? 1 : 0;
+          await vote({ postId: post.id, value: voteValue });
           setLoading("none");
         }}
         aria-label="Vote up"
         icon={<ChevronUpIcon w={6} h={6} />}
+        colorScheme={post.voteStatus === 1 ? "purple" : undefined}
       />
 
       <Text>{post.points}</Text>
@@ -28,10 +30,12 @@ export const Vote: React.FC<VoteProps> = ({ post }) => {
         isLoading={loading === "downvote"}
         onClick={async () => {
           setLoading("downvote");
-          await vote({ postId: post.id, value: -1 });
+          const voteValue = post.voteStatus !== -1 ? -1 : 0;
+          await vote({ postId: post.id, value: voteValue });
           setLoading("none");
         }}
         aria-label="Vote down"
+        colorScheme={post.voteStatus === -1 ? "purple" : undefined}
         icon={<ChevronDownIcon w={6} h={6} />}
       />
     </Flex>

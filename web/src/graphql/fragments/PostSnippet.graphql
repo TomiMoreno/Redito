@@ -5,6 +5,7 @@ fragment PostSnippet on Post {
   title
   reducedBody
   points
+  voteStatus
   creator {
     id
     username

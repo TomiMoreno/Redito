@@ -17,6 +17,7 @@ import {
 import { betterUpdateQuery } from "./betterUpdateQuery";
 import { pipe, tap } from "wonka";
 import router from "next/router";
+import { isServer } from "./isServer";
 
 export const errorExchange: Exchange =
   ({ forward }) =>
@@ -67,10 +68,20 @@ export const cursorPagination = (): Resolver => {
     };
   };
 };
-export const createUrqlClient = (ssrExchange: any) => ({
+export const createUrqlClient = (ssrExchange: any, ctx: any) => {
+  let cookie = ""
+
+  if (isServer()) {
+    cookie = ctx?.req?.headers?.cookie;
+  }
+  return {
   url: "http://localhost:4000/graphql",
   fetchOptions: {
     credentials: "include" as const,
+    headers: cookie 
+    ? { cookie, }
+    : undefined
+  ,
   },
   exchanges: [
     dedupExchange,
@@ -92,22 +103,26 @@ export const createUrqlClient = (ssrExchange: any) => ({
                 fragment _ on Post {
                   id
                   points
+                  voteStatus
                 }
               `,
               { id: postId }
             );
             if (data) {
-              const newPoints = (data.points as number) + value;
-              console.log(
+              if (data.voteStatus === value) {
+                return;
+              }
+            const newPoints = (data.points as number) + (value -data.voteStatus);
                 cache.writeFragment(
                   gql`
                     fragment _ on Post {
                       points
+                      voteStatus
                     }
                   `,
-                  { id: postId, points: newPoints }
+                  { id: postId, points: newPoints, voteStatus: value }
                 )
-              );
+
             }
           },
 
@@ -167,4 +182,5 @@ export const createUrqlClient = (ssrExchange: any) => ({
     ssrExchange,
     fetchExchange,
   ],
-});
+}
+}

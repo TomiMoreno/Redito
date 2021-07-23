@@ -38,11 +38,13 @@ export class Post extends BaseEntity {
   @Field()
   @ManyToOne(() => User, (user) => user.posts)
   creator: User;
+
   @OneToMany(() => Vote, (vote) => vote.post)
   votes: Vote[];
 
-  @Field()
+  @Field(() => Int, { nullable: true })
   voteStatus: number;
+
   @Field(() => String)
   @CreateDateColumn()
   createdAt: Date;
