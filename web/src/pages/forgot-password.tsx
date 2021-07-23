@@ -6,14 +6,14 @@ import { InputField } from "../components/InputField";
 import { useForgotPasswordMutation } from "../generated/graphql";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import { DarkModeSwitch } from "../components/DarkModeSwitch";
+import { MinimalistNavBar } from "../components/NavBar";
 
 export const ForgotPassword = () => {
   const [, forgotPassword] = useForgotPasswordMutation();
   const [emailExists, setEmailExists] = useState("");
   return (
     <FormWrapper>
-      <DarkModeSwitch isFixed />
+      <MinimalistNavBar />
       <Text fontSize="50px" textAlign="center">
         Forgot password
       </Text>

@@ -1,22 +1,22 @@
-import { Box, Button, Flex, Heading, Link } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Link, Text} from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
-import { DarkModeSwitch } from "../components/DarkModeSwitch";
 import { InputField } from "../components/InputField";
 import { FormWrapper } from "../components/Wrapper";
 import { useLoginMutation } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import toErrorMap from "../utils/toErrorMap";
+import { MinimalistNavBar } from "../components/NavBar";
 
 export const Login = () => {
   const [{}, login] = useLoginMutation();
   const router = useRouter();
   return (
     <FormWrapper>
-      <DarkModeSwitch isFixed />
+      <MinimalistNavBar /> 
       <Box>
         <Heading fontSize="50px" textAlign="center">
           Login
@@ -30,6 +30,7 @@ export const Login = () => {
             const errors = toErrorMap(response.data.login.errors);
             setErrors(errors);
           } else if (response.data?.login.user) {
+            console.log(typeof router.query.next);
             if (typeof router.query.next === "string") {
               router.push(router.query.next);
             } else {
@@ -53,6 +54,11 @@ export const Login = () => {
                 type="password"
               />
             </Box>
+            <Flex mt={4} justifyContent="flex-end" alignItems="center">
+              <NextLink href="/forgot-password">
+                <Link color="purple">Forgot password?</Link>
+              </NextLink>
+            </Flex>
             <Flex mt={4} justifyContent="space-evenly" alignItems="center">
               <Button
                 type="submit"
@@ -61,9 +67,12 @@ export const Login = () => {
               >
                 Login
               </Button>
-              <NextLink href="/forgot-password">
-                <Link color="purple">Forgot password?</Link>
-              </NextLink>
+              <Text>
+                Don't have an account? {" "}
+                <NextLink href="register">
+                  <Link color="purple">Register now</Link>
+                </NextLink>
+              </Text>
             </Flex>
           </Form>
         )}

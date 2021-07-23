@@ -1,5 +1,6 @@
 import React from "react";
-import { Box, Button, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Link, Text } from "@chakra-ui/react";
+import NextLink from 'next/link';
 import { Formik, Form } from "formik";
 import { FormWrapper } from "../components/Wrapper";
 import { InputField } from "../components/InputField";
@@ -8,7 +9,7 @@ import toErrorMap from "../utils/toErrorMap";
 import { useRouter } from "next/router";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import { DarkModeSwitch } from "../components/DarkModeSwitch";
+import { MinimalistNavBar } from "../components/NavBar";
 
 interface registerProps {}
 
@@ -17,7 +18,7 @@ export const Register: React.FC<registerProps> = () => {
   const router = useRouter();
   return (
     <FormWrapper>
-      <DarkModeSwitch isFixed />
+      <MinimalistNavBar />
       <Text fontSize="50px" textAlign="center">
         Register
       </Text>
@@ -56,15 +57,22 @@ export const Register: React.FC<registerProps> = () => {
                 type="password"
               />
             </Box>
+            <Flex mt={4} justifyContent="space-evenly" alignItems="center" flexWrap="wrap">
 
-            <Button
-              mt={4}
-              type="submit"
-              isLoading={isSubmitting}
-              colorScheme="purple"
-            >
-              Register
-            </Button>
+              <Button
+                type="submit"
+                isLoading={isSubmitting}
+                colorScheme="purple"
+              >
+                Register
+              </Button>
+                <Text>
+                  Already have an account? {" "}
+                  <NextLink href="/login">
+                    <Link color="purple">Log in</Link>
+                  </NextLink>
+                </Text>
+            </Flex>
           </Form>
         )}
       </Formik>

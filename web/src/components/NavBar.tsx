@@ -1,3 +1,4 @@
+import { ArrowBackIcon } from "@chakra-ui/icons";
 import { Button, Flex, Link, Text, useColorModeValue } from "@chakra-ui/react";
 import NextLink from "next/link";
 import React from "react";
@@ -53,12 +54,16 @@ export const NavBar: React.FC<NavBarProps> = () => {
       borderColor={useColorModeValue("gray.200", "gray.900")}
       mb={4}
     >
-      <Text
-        fontFamily={"heading"}
-        color={useColorModeValue("gray.800", "white")}
-      >
-        Redito
-      </Text>
+      <NextLink href="/">
+        <Text
+          fontFamily={"heading"}
+          color={useColorModeValue("gray.800", "white")}
+          fontWeight="bold"
+          cursor="pointer"
+        >
+          Redito
+        </Text>
+      </NextLink>
       <Flex align="center" justify="center">
         {body}
         <DarkModeSwitch />
@@ -66,3 +71,14 @@ export const NavBar: React.FC<NavBarProps> = () => {
     </Flex>
   );
 };
+
+export const MinimalistNavBar = () => (
+  <>
+    <NextLink href="/">
+        <Link>
+          <ArrowBackIcon width="7" height="7" position="fixed" top="1rem" left="1rem" />
+        </Link>
+      </NextLink>
+      <DarkModeSwitch isFixed />
+  </>
+);
