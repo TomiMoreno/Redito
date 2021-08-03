@@ -5,9 +5,12 @@ import React from "react";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServer } from "../utils/isServer";
 import { DarkModeSwitch } from "./DarkModeSwitch";
+import {useRouter} from 'next/router';
 
 interface NavBarProps {}
 export const NavBar: React.FC<NavBarProps> = () => {
+  const router = useRouter();
+
   const [{ data, fetching }] = useMeQuery({
     pause: isServer(),
   });
@@ -31,8 +34,9 @@ export const NavBar: React.FC<NavBarProps> = () => {
         <Text>{data?.me?.username}</Text>
         <Button
           mx={5}
-          onClick={() => {
-            logout();
+          onClick={async () => {
+            await logout();
+            router.reload()
           }}
           isLoading={loggingOut}
         >

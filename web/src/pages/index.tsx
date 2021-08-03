@@ -12,9 +12,11 @@ import {
   Center,
   Flex,
   Spinner,
+  Link
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { Vote } from "../components/Vote";
+import { getTimeAgo } from "../utils/timeAgo";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -44,15 +46,18 @@ const Index = () => {
                       <Vote post={p} />
                       <Box flexGrow={1}>
                         <Flex align="center" justify="space-between">
-                          <Heading fontSize="xl">{p.title}</Heading>
+                          <NextLink href="post/[id]" as={`/post/${p.id}`}>
+                              <Link>
+                                <Heading fontSize="xl">{p.title}</Heading>
+                              </Link>
+                          </NextLink>
+                          
                           <Text>
-                            {new Date(
-                              parseInt(p.createdAt)
-                            ).toLocaleTimeString()}
+                            {getTimeAgo(+p.createdAt)}
                           </Text>
                         </Flex>
                         <Text>Posted by {p?.creator.username}</Text>
-                        <Text mt={4}>{p.reducedBody}</Text>
+                        <Text wordBreak="break-word" mt={4}>{p.reducedBody}</Text>
                       </Box>
                     </Flex>
                   </Box>

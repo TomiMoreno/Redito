@@ -5,7 +5,7 @@ import {
   stringifyVariables,
   gql,
 } from "urql";
-import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
+import { Cache, cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import {
   LoginMutation,
   LogoutMutation,
@@ -34,6 +34,15 @@ export const errorExchange: Exchange =
     );
   };
 
+const invalidateAllPosts = (cache: Cache) => {
+  const allFields = cache.inspectFields("Query");
+    const fieldInfos = allFields.filter(
+      (info) => info.fieldName === "posts"
+    );
+    fieldInfos.forEach((fi) => {
+      cache.invalidate("Query", "posts", fi.arguments || {});
+    });
+}
 export const cursorPagination = (): Resolver => {
   return (_parent, fieldArgs, cache, info) => {
     const { parentKey: entityKey, fieldName } = info;
@@ -109,9 +118,6 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
               { id: postId }
             );
             if (data) {
-              if (data.voteStatus === value) {
-                return;
-              }
             const newPoints = (data.points as number) + (value -data.voteStatus);
                 cache.writeFragment(
                   gql`
@@ -122,11 +128,11 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   `,
                   { id: postId, points: newPoints, voteStatus: value }
                 )
-
             }
           },
 
           login: (_result, _args, cache, _info) => {
+            invalidateAllPosts(cache);
             betterUpdateQuery<LoginMutation, MeQuery>(
               cache,
               { query: MeDocument },
@@ -167,13 +173,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
             );
           },
           createPost: (_result, _args, cache, _info) => {
-            const allFields = cache.inspectFields("Query");
-            const fieldInfos = allFields.filter(
-              (info) => info.fieldName === "posts"
-            );
-            fieldInfos.forEach((fi) => {
-              cache.invalidate("Query", "posts", fi.arguments || {});
-            });
+            invalidateAllPosts(cache)
           },
         },
       },

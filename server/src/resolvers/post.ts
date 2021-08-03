@@ -15,7 +15,7 @@ import {
 } from "type-graphql";
 import { MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
-import { getConnection } from "typeorm";
+import { getConnection, LessThan, MoreThan } from "typeorm";
 import { Vote } from "../entities/Vote";
 
 @InputType()
@@ -52,12 +52,15 @@ export class PostResolver {
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit) + 1;
     const realLimitPlusOne = realLimit + 1;
-    const replacements: any[] = [realLimitPlusOne, req.session.userId];
-    console.log("user", req.session);
+    const replacements: any[] = [realLimitPlusOne];
+    let cursorIndex = 3
+    if(req.session.userId) {
+      replacements.push(req.session.userId)
+    }
     if (cursor) {
       replacements.push(new Date(parseInt(cursor)));
+      cursorIndex = replacements.length;
     }
-
     const posts = await getConnection().query(
       `
     select p.*,
@@ -71,11 +74,11 @@ export class PostResolver {
       ${
         req.session.userId
           ? '(select value from vote where "userId" = $2 and "postId" = p.id) as "voteStatus"'
-          : '0 as "voteStatus", $2'
+          : '0 as "voteStatus"'
       }
     from post p
     inner join public.user u on u.id = p."creatorId"
-    ${cursor ? `where p."createdAt" < $3` : ""}
+    ${cursor ? `where p."createdAt" < $${cursorIndex}` : ""}
     order by p."createdAt" DESC
     limit $1;
     `,
@@ -89,8 +92,8 @@ export class PostResolver {
   }
 
   @Query(() => Post, { nullable: true })
-  post(@Arg("id") id: number): Promise<Post | undefined> {
-    return Post.findOne(id);
+  post(@Arg("id", () => Int) id: number): Promise<Post | undefined> {
+    return Post.findOne(id, {relations: ["creator"]})
   }
 
   @Mutation(() => Post)

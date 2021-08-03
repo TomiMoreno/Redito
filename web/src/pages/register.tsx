@@ -33,6 +33,20 @@ export const Register: React.FC<registerProps> = () => {
             router.push("/");
           }
         }}
+        validate={(values ) => {
+          const errors = {username: '', password: '', email: ''};
+          if (values.username.length < 3) {
+            errors.username = "Username length must be greater than 2"
+          }else if(values.username.includes('@')){
+            errors.username = "Username cannot contain an @ symbol"
+          } else if (values.password.length < 6) {
+            errors.password = "Password length must be greater than 5"
+          } else if (!values.email) {
+            errors.email = "Email is required"
+          }
+          
+          return errors;
+        }}
       >
         {({ isSubmitting }) => (
           <Form>

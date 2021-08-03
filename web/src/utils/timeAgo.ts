@@ -1,4 +1,6 @@
 const DATE_UNITS: dateObject = new Map([
+  ["year", 12 * 31 * 24 * 60 * 60],
+  ["month", 31 * 24 * 60 * 60],
   ["day", 86400],
   ["hour", 3600],
   ["minute", 60],
